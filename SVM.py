@@ -49,27 +49,33 @@ class SVM:
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
-        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y) #for simplicity of visualiztion, we'll consider the first column as x, and the second column as y 
+        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y) #for simplicity of visualization, we'll consider the first column as x, and the second column as y 
 
-        x0_1 = np.amin(X[:, 0])
-        x0_2 = np.amax(X[:, 0])
+        #bounary start point
+        x0_1 = np.amin(X[:, 0]) #x
+        x0_2 = np.amax(X[:, 0]) #y
 
+        #boundary end point(hyperplane)
         x1_1 = get_hyperplane_value(x0_1, self.weights, self.bais, 0)
         x1_2 = get_hyperplane_value(x0_2, self.weights, self.bais, 0)
 
+        #boundary end point(negative margine)
         x1_1_m = get_hyperplane_value(x0_1, self.weights, self.bais, -1)
         x1_2_m = get_hyperplane_value(x0_2, self.weights, self.bais, -1)
 
+        #boundary end point(positive margine)
         x1_1_p = get_hyperplane_value(x0_1, self.weights, self.bais, 1)
         x1_2_p = get_hyperplane_value(x0_2, self.weights, self.bais, 1)
 
-        ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--")
+        ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--", label = "SVM hyperplane")
         ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], "k")
         ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], "k")
 
         x1_min = np.amin(X[:, 1])
         x1_max = np.amax(X[:, 1])
         ax.set_ylim([x1_min - 3, x1_max + 3])
+
+        plt.legend()
 
         plt.show()
 
