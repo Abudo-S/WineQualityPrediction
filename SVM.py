@@ -1,6 +1,4 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn import datasets
 import matplotlib.pyplot as plt
 
 '''
@@ -9,14 +7,10 @@ even if it means a smaller margin. This can lead to a smaller margin and potenti
 A lower value of λ decreases the cost of misclassifications, allowing the algorithm to have a larger margin, 
 even if it misclassifies some training points. This can lead to underfitting if λ is too small.
 
-Since the prediction = sgn(w * x + b) that supports the binary classification; in order to generalize it for N-class classification:
-*One-vs-Rest (OVR) or One-vs-All (OVA):Train a separate binary classifier for each class. For a dataset with K classes, you would train K SVM classifiers
-[The class corresponding to the classifier that produces the most positive decision value is chosen as the predicted class.]
-*One-vs-One (OVO): Train a binary classifier for every pair of distinct classes. For K classes, this results in training K(K-1)/2 binary SVM classifiers.
-[The class that receives the most votes is chosen as the predicted class]
+The learning phase aims to adjust the weights and bias (ex. concise higher weights for the unbalanced class/laber in the training set distribution).
 '''
 class SVM:
-    #the hyperparameters need to be tuned by k-CV or through sklearn.model_selection.validation_curve()
+    #the hyperparameters need to be tuned by k-CV
     def __init__(self, learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000):
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
@@ -24,11 +18,8 @@ class SVM:
         self.weights = None
         self.bais = None
 
-    '''
-    the learning phase aims to adjust the weights and bias
-    '''
     def fit(self, X, y):
-        n_samples, n_features = X.shape
+        n_features = X.shape[1]
 
         self.weights = np.zeros(n_features)
         self.bais = 0
@@ -37,7 +28,7 @@ class SVM:
 
         for _ in range(self.n_iterations):
             for idx, x_i in enumerate(X):
-                condition = y_[idx] * (np.dot(x_i, self.weights) + self.bais) >= 1 #np.dot(wi * xi) = sum(wi * xi)
+                condition = y_[idx] * (np.dot(x_i, self.weights) + self.bais) >= 1 #np.dot(wi, xi) = sum(wi * xi)
                 
                 #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
                 if condition:
@@ -50,7 +41,7 @@ class SVM:
         linear_output = np.dot(X, self.weights) + self.bais
         return np.sign(linear_output)
 
-    def visualize_svm(self):
+    def visualize_svm(self, X):
         plt.clf()
         
         def get_hyperplane_value(x, w, b, offset):
