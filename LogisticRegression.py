@@ -1,10 +1,5 @@
 import numpy as np
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-import itertools
-from collections import Counter
-import pandas as pd
 
 
 '''
@@ -12,6 +7,9 @@ It squashes any real-valued number into a value between 0 and 1, which can be in
 it seeks to find a logaritmic equation(sigmoid) that best describes how one or more independent variables (features)
 relate to a dependent variable (target label).
 The model aims to find the "best-fit" line or hyperplane that MINIMIZES the gradient(not exact value predictor "based on a predefined threshold")
+
+n_iters is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
+The learning phase aims to adjust the weights and bias (ex. concise higher weights for the unbalanced class/laber in the training set distribution).
 '''
 class LogisticRegression:
     def __init__(self, learning_rate=0.001, n_iters=1000, threshold=0.5):
