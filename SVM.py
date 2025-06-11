@@ -41,7 +41,7 @@ class SVM:
         linear_output = np.dot(X, self.weights) + self.bais
         return np.sign(linear_output)
 
-    def visualize_svm(self, X):
+    def visualize_svm(self, X, y):
         plt.clf()
         
         def get_hyperplane_value(x, w, b, offset):
@@ -49,7 +49,7 @@ class SVM:
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
-        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y)
+        plt.scatter(X[:, 0], X[:, 1], marker="o", c=y) #for simplicity of visualiztion, we'll consider the first column as x, and the second column as y 
 
         x0_1 = np.amin(X[:, 0])
         x0_2 = np.amax(X[:, 0])
