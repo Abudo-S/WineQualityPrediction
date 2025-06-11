@@ -16,29 +16,29 @@ class SVM:
         self.lambda_param = lambda_param
         self.n_iterations = n_iterations
         self.weights = None
-        self.bais = None
+        self.bias = None
 
     def fit(self, X, y):
         n_features = X.shape[1]
 
         self.weights = np.zeros(n_features)
-        self.bais = 0
+        self.bias = 0
 
         y_ = np.where(y > 0, 1, -1)
 
         for _ in range(self.n_iterations):
             for idx, x_i in enumerate(X):
-                condition = y_[idx] * (np.dot(x_i, self.weights) + self.bais) >= 1 #np.dot(wi, xi) = sum(wi * xi)
+                condition = y_[idx] * (np.dot(x_i, self.weights) + self.bias) >= 1 #np.dot(wi, xi) = sum(wi * xi)
                 
                 #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
                 if condition:
                     self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
                 else:
                     self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights - np.dot(x_i, y_[idx]))
-                    self.bais -= self.learning_rate * y_[idx]
+                    self.bias -= self.learning_rate * y_[idx]
 
     def predict(self, X):
-        linear_output = np.dot(X, self.weights) + self.bais
+        linear_output = np.dot(X, self.weights) + self.bias
         return np.sign(linear_output)
 
     def visualize_svm(self, X, y):
@@ -56,16 +56,16 @@ class SVM:
         x0_2 = np.amax(X[:, 0]) #y
 
         #boundary end point(hyperplane)
-        x1_1 = get_hyperplane_value(x0_1, self.weights, self.bais, 0)
-        x1_2 = get_hyperplane_value(x0_2, self.weights, self.bais, 0)
+        x1_1 = get_hyperplane_value(x0_1, self.weights, self.bias, 0)
+        x1_2 = get_hyperplane_value(x0_2, self.weights, self.bias, 0)
 
         #boundary end point(negative margine)
-        x1_1_m = get_hyperplane_value(x0_1, self.weights, self.bais, -1)
-        x1_2_m = get_hyperplane_value(x0_2, self.weights, self.bais, -1)
+        x1_1_m = get_hyperplane_value(x0_1, self.weights, self.bias, -1)
+        x1_2_m = get_hyperplane_value(x0_2, self.weights, self.bias, -1)
 
         #boundary end point(positive margine)
-        x1_1_p = get_hyperplane_value(x0_1, self.weights, self.bais, 1)
-        x1_2_p = get_hyperplane_value(x0_2, self.weights, self.bais, 1)
+        x1_1_p = get_hyperplane_value(x0_1, self.weights, self.bias, 1)
+        x1_2_p = get_hyperplane_value(x0_2, self.weights, self.bias, 1)
 
         ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--", label = "SVM hyperplane")
         ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], "k")
