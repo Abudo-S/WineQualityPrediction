@@ -8,13 +8,13 @@ it seeks to find a logaritmic equation(sigmoid) that best describes how one or m
 relate to a dependent variable (target label).
 The model aims to find the "best-fit" line or hyperplane that MINIMIZES the gradient(not exact value predictor "based on a predefined threshold")
 
-n_iters is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
+n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
 The learning phase aims to adjust the weights and bias (ex. concise higher weights for the unbalanced class/laber in the training set distribution).
 '''
 class LogisticRegression:
-    def __init__(self, learning_rate=0.001, n_iters=1000, threshold=0.5):
+    def __init__(self, learning_rate=0.001, n_iterations=1000, threshold=0.5):
         self.learning_rate = learning_rate
-        self.n_iters = n_iters
+        self.n_iterations = n_iterations
         self.threshold = threshold
         self.bias = None
         self.weights = None
@@ -24,7 +24,7 @@ class LogisticRegression:
         self.weights = np.zeros(n_features)
         self.bias = 0
 
-        for _ in range(self.n_iters):
+        for _ in range(self.n_iterations):
             y_predicted = self._predict_prob(X)
 
             first_derivative_dw = (1 / n_sample) * np.dot(X.T, (y_predicted - y))
@@ -38,7 +38,7 @@ class LogisticRegression:
         y_predicted = self._predict_prob(X)
         
         #converting probabilities to classes based on a single threshold, make LR considered as linear model, despite the expliot of sigmoid
-        return np.where(y_predicted >= self.threshold, 1, 0) 
+        return np.where(y_predicted >= self.threshold, 1, -1) 
 
     def _predict_prob(self, X):
         linear_y = np.dot(X, self.weights) + self.bias
