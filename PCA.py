@@ -18,6 +18,7 @@ class PCA:
         self.n_components = n_components
         self.mean = None
         self.components = None
+        self.components_idxs = None
         self.explained_variance = None # Variance explained by each component
         self.explained_variance_ratio = None # Percentage of variance explained by each component
         
@@ -48,9 +49,10 @@ class PCA:
         self.components = eigen_vectors[:, :self.n_components]
         self.explained_variance = eigen_values[:self.n_components]
         self.explained_variance_ratio = self.explained_variance / np.sum(eigen_values)
+        self.components_idxs = idxs[:self.n_components]
 
-        print(f"explained variance per comp. idxs{idxs[:self.n_components]}: {self.explained_variance}")
-        print(f"explained variance ratio per comp. idxs{idxs[:self.n_components]}: {self.explained_variance_ratio}")
+        print(f"explained variance per comp. idxs{self.components_idxs}: {self.explained_variance}")
+        print(f"explained variance ratio per comp. idxs{self.components_idxs}: {self.explained_variance_ratio}")
 
     
     def transform(self, X):
