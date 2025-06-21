@@ -11,7 +11,12 @@ The learning phase aims to adjust the weights and bias (ex. concise higher weigh
 '''
 class SVM:
     #the hyperparameters need to be tuned by k-CV
-    def __init__(self, learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000):
+    '''
+    we can choose either batch gradient descent "BGD" or stocastic gradient descent "SGD"
+    Note that SGD is more sensible to the noise since it applies weight/bias updates based on each data point
+    '''
+    def __init__(self, gradient_strategy = "BGD", learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000):
+        self.gradient_strategy = gradient_strategy
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
         self.n_iterations = n_iterations
@@ -19,23 +24,44 @@ class SVM:
         self.bias = None
 
     def fit(self, X, y):
-        n_features = X.shape[1]
+        n_samples, n_features = X.shape
 
         self.weights = np.zeros(n_features)
         self.bias = 0
 
         y_ = np.where(y > 0, 1, -1)
 
-        for _ in range(self.n_iterations):
-            for idx, x_i in enumerate(X):
-                condition = y_[idx] * (np.dot(x_i, self.weights) + self.bias) >= 1 #np.dot(wi, xi) = sum(wi * xi)
+        #Batch gradient descent
+        if(self.gradient_strategy == "BGD"):
+            for _ in range(self.n_iterations):
+                dw = np.zeros(n_features)
+                db = 0                   
+
+                for idx, x_i in enumerate(X):
+                    margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias)
+
+                    if margin_score < 1:
+                        dw += (-y_[idx] * x_i)
+                        db += (-y_[idx])
+
+                dw_avg = dw / n_samples
+                db_avg = db / n_samples
                 
                 #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
-                if condition:
-                    self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
-                else:
-                    self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights - np.dot(x_i, y_[idx]))
-                    self.bias -= self.learning_rate * y_[idx]
+                self.weights -= self.learning_rate * (dw_avg + (2 * self.lambda_param * self.weights))
+                self.bias -= self.learning_rate * db_avg
+
+        else: #Stocastic gradient descent
+            for _ in range(self.n_iterations):
+                for idx, x_i in enumerate(X):
+                    margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias) #np.dot(wi * xi) = sum(wi * xi)
+                    
+                    #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
+                    if margin_score < 1:
+                        self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights - np.dot(x_i, y_[idx]))
+                        self.bias -= self.learning_rate * y_[idx]
+                    else:
+                        self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
 
     def predict(self, X):
         linear_output = np.dot(X, self.weights) + self.bias
