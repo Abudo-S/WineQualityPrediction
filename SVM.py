@@ -7,7 +7,8 @@ even if it means a smaller margin. This can lead to a smaller margin and potenti
 A lower value of λ decreases the cost of misclassifications, allowing the algorithm to have a larger margin, 
 even if it misclassifies some training points. This can lead to underfitting if λ is too small.
 
-The learning phase aims to adjust the weights and bias (ex. concise higher weights for the unbalanced class/laber in the training set distribution).
+The learning rate aims to adjust the weights and bias (determines how big of a step the algorithm takes in the direction opposite to the gradient)
+n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
 '''
 class SVM:
     #the hyperparameters need to be tuned by k-CV
@@ -85,11 +86,11 @@ class SVM:
         x1_1 = get_hyperplane_value(x0_1, self.weights, self.bias, 0)
         x1_2 = get_hyperplane_value(x0_2, self.weights, self.bias, 0)
 
-        #boundary end point(negative margine)
+        #boundary end point(negative margin)
         x1_1_m = get_hyperplane_value(x0_1, self.weights, self.bias, -1)
         x1_2_m = get_hyperplane_value(x0_2, self.weights, self.bias, -1)
 
-        #boundary end point(positive margine)
+        #boundary end point(positive margin)
         x1_1_p = get_hyperplane_value(x0_1, self.weights, self.bias, 1)
         x1_2_p = get_hyperplane_value(x0_2, self.weights, self.bias, 1)
 

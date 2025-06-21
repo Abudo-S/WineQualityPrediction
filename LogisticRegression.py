@@ -8,8 +8,8 @@ it seeks to find a logaritmic equation(sigmoid) that best describes how one or m
 relate to a dependent variable (target label).
 The model aims to find the "best-fit" line or hyperplane that MINIMIZES the gradient(not exact value predictor "based on a predefined threshold")
 
+The learning rate aims to adjust the weights and bias (determines how big of a step the algorithm takes in the direction opposite to the gradient)
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
-The learning phase aims to adjust the weights and bias (ex. concise higher weights for the unbalanced class/laber in the training set distribution).
 '''
 class LogisticRegression:
     def __init__(self, learning_rate=0.001, n_iterations=1000, threshold=0.5):
