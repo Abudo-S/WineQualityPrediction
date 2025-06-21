@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 It squashes any real-valued number into a value between 0 and 1, which can be interpreted as a probability. σ(z)= 1 / (1+e^−z)
 it seeks to find a logaritmic equation(sigmoid) that best describes how one or more independent variables (features)
 relate to a dependent variable (target label).
-The model aims to find the "best-fit" line or hyperplane that MINIMIZES the gradient(not exact value predictor "based on a predefined threshold")
+The model aims to find the "best-fit" approximated hyperplane that MINIMIZES the gradient(not exact value predictor "based on a predefined threshold")
 
 The learning rate aims to adjust the weights and bias (determines how big of a step the algorithm takes in the direction opposite to the gradient)
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
