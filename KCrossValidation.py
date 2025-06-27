@@ -20,12 +20,12 @@ class KCrossValidation:
         indices = np.arange(n_samples)
         np.random.shuffle(indices) # shuffle the indices for randomness
 
-        # determine fold sizes
+        #determine fold sizes
         fold_sizes = np.full(self.n_folds, n_samples // self.n_folds, dtype=int)
         # distribute remainder samples to the first 'n_samples % self.n_folds' folds
         fold_sizes[:n_samples % self.n_folds] += 1
         
-        # fill fold with indices
+        #fill fold with indices
         current = 0
         folds_indices = []
         for fold_size in fold_sizes:
@@ -34,7 +34,7 @@ class KCrossValidation:
         
         scores = []
         params_str = ','.join([f'{k}:{v}' for k,v in model_params.items()])
-        # iterate through k folds
+        #iterate through k folds
         for i in range(self.n_folds):
             val_indices = folds_indices[i]
             
@@ -42,11 +42,11 @@ class KCrossValidation:
             train_indices_list = [folds_indices[j] for j in range(self.n_folds) if j != i]
             train_indices = np.concatenate(train_indices_list)
 
-            # split data into training and validation sets for i-th fold
+            #split data into training and validation sets for i-th fold
             X_train_fold, y_train_fold = X[train_indices], y[train_indices]
             X_val_fold, y_val_fold = X[val_indices], y[val_indices]
 
-            # initialize the model using our params
+            #initialize the model using our params
             if model_params is not None:
                 model = self.model_class(**model_params)
             else:
@@ -54,7 +54,7 @@ class KCrossValidation:
 
             model.fit(X_train_fold, y_train_fold)
 
-            # evaluate the used params on the validation fold
+            #evaluate the used params on the validation fold
             y_pred = model.predict(X_val_fold)
             score = self.evaluation_metric(y_val_fold, y_pred)
             scores.append(score)

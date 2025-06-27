@@ -24,11 +24,13 @@ class LogisticRegression:
         self.weights = np.zeros(n_features)
         self.bias = 0
 
+        y_ = np.where(y > 0, 1, -1)
+        
         for _ in range(self.n_iterations):
             y_predicted = self._predict_prob(X)
 
-            first_derivative_dw = (1 / n_sample) * np.dot(X.T, (y_predicted - y))
-            second_derivative_db = (1 / n_sample) * np.sum(y_predicted - y)
+            first_derivative_dw = (1 / n_sample) * np.dot(X.T, (y_predicted - y_))
+            second_derivative_db = (1 / n_sample) * np.sum(y_predicted - y_)
 
             #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
             self.weights -= self.learning_rate * first_derivative_dw #adjust weights with respect to the learning rate
