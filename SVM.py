@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from Kernel import Kernel
+from cvxopt import matrix, solvers
 
 '''
 A higher value of λ increases the cost of misclassifications, forcing the algorithm to try harder to classify all training points correctly, 
@@ -16,21 +18,29 @@ class SVM:
     we can choose either batch gradient descent "BGD" or stocastic gradient descent "SGD"
     Note that SGD is more sensible to the noise since it applies weight/bias updates based on each data point
     '''
-    def __init__(self, gradient_strategy = "BGD", learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000):
+    def __init__(self, gradient_strategy = "BGD", learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000, kernal:Kernel=None):
         self.gradient_strategy = gradient_strategy
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
         self.n_iterations = n_iterations
         self.weights = None
         self.bias = None
+        self.kernel = kernal
 
     def fit(self, X, y):
-        n_samples, n_features = X.shape
+        y_ = np.where(y > 0, 1, -1)
 
+        if self.kernel is not None:
+            self._fit_ksvm(X, y_)
+        else:
+            self._fit_svm(X, y_)
+        
+
+    def _fit_svm(self, X, y_):
+        n_samples, n_features = X.shape
+        
         self.weights = np.zeros(n_features)
         self.bias = 0
-
-        y_ = np.where(y > 0, 1, -1)
 
         #Batch gradient descent
         if(self.gradient_strategy == "BGD"):
@@ -39,6 +49,7 @@ class SVM:
                 db = 0                   
 
                 for idx, x_i in enumerate(X):
+                    #y_[idx] * (sum_j(alphas_j * K(X_j, X_i)) + self.bias)
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias)
 
                     if margin_score < 1:
@@ -65,8 +76,59 @@ class SVM:
                         self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
 
     def predict(self, X):
-        linear_output = np.dot(X, self.weights) + self.bias
-        return np.sign(linear_output)
+        predictions = np.zeros(X.shape[1])
+
+        if self.kernel is not None:
+            for x_idx in range(X.shape[0]):
+                predictions[x_idx] = np.dot(self.kernel.K_matrix[x_idx, :], self.alphas) + self.bias
+        else:
+            predictions = np.dot(X, self.weights) + self.bias #linear prediction
+
+        return np.sign(predictions) #y
+
+    def _fit_ksvm(self, X, y_):
+        n_samples = X.shape[0]
+        
+        #q, p parameters using K_matrix and y_
+        P = matrix(np.outer(y_, y_) * self.K_matrix) #y_i * y_j * K(x_i, x_j) part
+        q = matrix(np.ones(n_samples) * -1)
+
+        #constraints for 0 <= alpha_i <= C
+        G_ineq = matrix(np.vstack((-np.eye(n_samples), np.eye(n_samples))))
+        h_ineq = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.C)))
+
+        #constraint for sum(alpha_i * y_i) = 0
+        A_eq = matrix(y_, (1, n_samples), 'd')
+        b_eq = matrix(0.0)
+
+        #qp solver
+        solution = solvers.qp(P, q, G_ineq, h_ineq, A_eq, b_eq)
+        
+        #alpha vector
+        self.alphas = np.array(solution['x']).flatten() 
+    
+        #identify support vectors (SV)
+        sv_indices = self.alphas > 1e-5 #points with non-zero alpha are SVs
+        self.support_vectors = X[sv_indices]
+        self.support_vector_labels = y_[sv_indices]
+        self.support_vector_alphas = self.alphas[sv_indices]
+        
+        #use a support vector x_k for which 0 < alpha_k < lambda (a margin support vector)
+        margin_sv_indices = (self.alphas > 1e-5) & (self.alphas < self.lambda_param - 1e-5)
+        
+        if np.sum(margin_sv_indices) > 0:
+            b_values = []
+            for i in np.where(margin_sv_indices)[0]:
+                #calculate f(x_i) = sum(alpha_j * y_j * K(x_j, x_i)) for the current SV x_i
+                f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
+                b_values.append(y_[i] - f_x_i)
+            self.bias = np.mean(b_values)
+        elif np.sum(sv_indices) > 0: #fallback if no margin SVs
+            i = np.where(sv_indices)[0][0]
+            f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
+            self.bias = y_[i] - f_x_i
+        else:
+            self.bias = 0.0
 
     def visualize_svm(self, X, y):
         plt.clf()
