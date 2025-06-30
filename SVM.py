@@ -75,27 +75,16 @@ class SVM:
                     else:
                         self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
 
-    def predict(self, X):
-        predictions = np.zeros(X.shape[1])
-
-        if self.kernel is not None:
-            for x_idx in range(X.shape[0]):
-                predictions[x_idx] = np.dot(self.kernel.K_matrix[x_idx, :], self.alphas) + self.bias
-        else:
-            predictions = np.dot(X, self.weights) + self.bias #linear prediction
-
-        return np.sign(predictions) #y
-
     def _fit_ksvm(self, X, y_):
         n_samples = X.shape[0]
         
         #q, p parameters using K_matrix and y_
-        P = matrix(np.outer(y_, y_) * self.K_matrix) #y_i * y_j * K(x_i, x_j) part
+        P = matrix(np.outer(y_, y_) * self.kernel.K_matrix) #y_i * y_j * K(x_i, x_j) part
         q = matrix(np.ones(n_samples) * -1)
 
         #constraints for 0 <= alpha_i <= C
         G_ineq = matrix(np.vstack((-np.eye(n_samples), np.eye(n_samples))))
-        h_ineq = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.C)))
+        h_ineq = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.lambda_param)))
 
         #constraint for sum(alpha_i * y_i) = 0
         A_eq = matrix(y_, (1, n_samples), 'd')
@@ -108,28 +97,46 @@ class SVM:
         self.alphas = np.array(solution['x']).flatten() 
     
         #identify support vectors (SV)
-        sv_indices = self.alphas > 1e-5 #points with non-zero alpha are SVs
+        ALPHA_THRESHOLD = 1e-5
+        sv_indices = self.alphas > ALPHA_THRESHOLD #points with non-zero alpha are SVs
         self.support_vectors = X[sv_indices]
         self.support_vector_labels = y_[sv_indices]
         self.support_vector_alphas = self.alphas[sv_indices]
         
-        #use a support vector x_k for which 0 < alpha_k < lambda (a margin support vector)
-        margin_sv_indices = (self.alphas > 1e-5) & (self.alphas < self.lambda_param - 1e-5)
+        #use a support vector w.r.t. lambda_param
+        margin_sv_indices = (self.alphas > ALPHA_THRESHOLD) & (self.alphas < self.lambda_param - ALPHA_THRESHOLD)
         
         if np.sum(margin_sv_indices) > 0:
-            b_values = []
+            bias_values = []
             for i in np.where(margin_sv_indices)[0]:
                 #calculate f(x_i) = sum(alpha_j * y_j * K(x_j, x_i)) for the current SV x_i
                 f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
-                b_values.append(y_[i] - f_x_i)
-            self.bias = np.mean(b_values)
-        elif np.sum(sv_indices) > 0: #fallback if no margin SVs
+                bias_values.append(y_[i] - f_x_i)
+                
+            self.bias = np.mean(bias_values)
+        elif np.sum(sv_indices) > 0: #fallback to all alphas if no margin alpha SVs
             i = np.where(sv_indices)[0][0]
             f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
+
             self.bias = y_[i] - f_x_i
         else:
             self.bias = 0.0
 
+    def predict(self, X):
+        predictions = np.zeros(X.shape[0])
+
+        if self.kernel is not None:
+            K_test = self.kernel.compute_kernel_matrix(X, self.support_vectors)
+
+            predictions = np.dot(K_test, self.support_vector_alphas * self.support_vector_labels) + self.bias
+        else:
+            predictions = np.dot(X, self.weights) + self.bias #linear prediction
+
+        return np.sign(predictions) #y
+    
+    '''
+    Standard visualization [not kernerlized]
+    '''
     def visualize_svm(self, X, y):
         plt.clf()
         
@@ -167,4 +174,3 @@ class SVM:
         plt.legend()
 
         plt.show()
-
