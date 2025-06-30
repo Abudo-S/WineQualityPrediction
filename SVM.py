@@ -18,14 +18,14 @@ class SVM:
     we can choose either batch gradient descent "BGD" or stocastic gradient descent "SGD"
     Note that SGD is more sensible to the noise since it applies weight/bias updates based on each data point
     '''
-    def __init__(self, gradient_strategy = "BGD", learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000, kernal:Kernel=None):
+    def __init__(self, gradient_strategy = "BGD", learning_rate = 0.001, lambda_param = 0.01, n_iterations = 1000, kernel:Kernel=None):
         self.gradient_strategy = gradient_strategy
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
         self.n_iterations = n_iterations
         self.weights = None
         self.bias = None
-        self.kernel = kernal
+        self.kernel = kernel
 
     def fit(self, X, y):
         y_ = np.where(y > 0, 1, -1)
