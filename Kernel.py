@@ -36,20 +36,28 @@ class Kernel:
 
         return np.tanh(gamma * np.dot(x1, x2) + r)
 
-    def __init__(self, X:np.ndarray, kernal_func=gaussian_kernel, kernel_params:dict=None):
+    def __init__(self, X:np.ndarray, kernal_func=gaussian_kernel, kernel_params=dict()):
         self.kernal_func = kernal_func
         self.kernel_params = kernel_params
-        self.K_matrix = self._compute_kernel_matrix(X)
+        self.K_matrix = self.compute_kernel_matrix(X)
  
     '''
     Computes the kernel matrix "K" where K_ij = K(x_i, x_j).
+    X2 is always None in the training phase.
+    In the test phase [SVM]: X2= support vectors
+    In the test phase [LR]: X2= X_train
     '''
-    def _compute_kernel_matrix(self, X):
-        n_samples = X.shape[0]
-        K = np.zeros((n_samples, n_samples))
+    def compute_kernel_matrix(self, X1, X2=None):
+        if X2 is None:
+            X2 = X1
 
-        for i in range(n_samples):
-            for j in range(n_samples):
-                K[i, j] = self.kernal_func(X[i], X[j])
+        n_samples_1 = X1.shape[0]
+        n_samples_2 = X2.shape[0]
+
+        K = np.zeros((n_samples_1, n_samples_2))
+
+        for i in range(n_samples_1):
+            for j in range(n_samples_2):
+                K[i, j] = self.kernal_func(self, X1[i], X2[j])
 
         return K
