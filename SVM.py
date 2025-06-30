@@ -99,9 +99,9 @@ class SVM:
         #identify support vectors (SV)
         ALPHA_THRESHOLD = 1e-5
         sv_indices = self.alphas > ALPHA_THRESHOLD #points with non-zero alpha are SVs
-        self.support_vectors = X[sv_indices]
-        self.support_vector_labels = y_[sv_indices]
-        self.support_vector_alphas = self.alphas[sv_indices]
+        self.sv_data_points = X[sv_indices]
+        self.sv_y = y_[sv_indices]
+        self.sv_alphas = self.alphas[sv_indices]
         
         #use a support vector w.r.t. lambda_param
         margin_sv_indices = (self.alphas > ALPHA_THRESHOLD) & (self.alphas < self.lambda_param - ALPHA_THRESHOLD)
@@ -126,9 +126,9 @@ class SVM:
         predictions = np.zeros(X.shape[0])
 
         if self.kernel is not None:
-            K_test = self.kernel.compute_kernel_matrix(X, self.support_vectors)
+            K_test = self.kernel.compute_kernel_matrix(X, self.sv_data_points)
 
-            predictions = np.dot(K_test, self.support_vector_alphas * self.support_vector_labels) + self.bias
+            predictions = np.dot(K_test, self.sv_alphas * self.sv_y) + self.bias
         else:
             predictions = np.dot(X, self.weights) + self.bias #linear prediction
 
