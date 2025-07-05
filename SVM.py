@@ -36,7 +36,7 @@ class SVM:
 
     def fit(self, X, y, X_validation=None, y_validation=None):
         y_ = np.where(y > 0, 1, -1)
-        y_validation = np.where(y > 0, 1, -1)
+        y_validation = np.where(y_validation > 0, 1, -1)
 
         if self.kernel is not None:
             self._fit_ksvm(X, y_)
