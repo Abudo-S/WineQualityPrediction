@@ -57,7 +57,6 @@ class SVM:
                 db = 0                   
 
                 for idx, x_i in enumerate(X):
-                    #y_[idx] * (sum_j(alphas_j * K(X_j, X_i)) + self.bias)
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias)
 
                     if margin_score < 1:
@@ -148,6 +147,9 @@ class SVM:
 
         return np.sign(predictions) #y
     
+    '''
+    loss = Mean(max(0, 1 - y * f(x))) + λ||w||^2
+    '''
     def _hinge_loss(self, X, y_true):
         scores = np.dot(X, self.weights) + self.bias
     
