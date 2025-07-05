@@ -34,7 +34,7 @@ class SVM:
         self._train_accuracies = []
         self._test_accuracies = []
 
-    def fit(self, X, y, X_validation=None, y_validation=None):
+    def fit(self, X:np.ndarray, y:np.ndarray, X_validation:np.ndarray=None, y_validation:np.ndarray=None):
         y_ = np.where(y > 0, 1, -1)
         y_validation = np.where(y_validation > 0, 1, -1)
 
@@ -148,7 +148,7 @@ class SVM:
         return np.sign(predictions) #y
     
     '''
-    loss = Mean(max(0, 1 - y * f(x))) + λ||w||^2
+    loss = mean(max(0, 1 - y * f(x))) + λ * ||w||^2
     '''
     def _hinge_loss(self, X, y_true):
         scores = np.dot(X, self.weights) + self.bias
