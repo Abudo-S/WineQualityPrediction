@@ -12,7 +12,8 @@ The learning rate aims to adjust the weights and bias (determines how big of a s
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
 '''
 class LogisticRegression:
-    def __init__(self, learning_rate=0.001, n_iterations=1000, threshold=0.5):
+    def __init__(self, gradient_strategy = "BGD", learning_rate=0.001, n_iterations=1000, threshold=0.5):
+        self.gradient_strategy = gradient_strategy
         self.learning_rate = learning_rate
         self.n_iterations = n_iterations
         self.threshold = threshold
@@ -32,18 +33,39 @@ class LogisticRegression:
 
         y_ = np.where(y > 0, 1, -1)
         
-        for epoch in range(self.n_iterations):
-            y_predicted = self._predict_prob(X)
+        #Batch gradient descent
+        if(self.gradient_strategy == "BGD"):
+            for epoch in range(self.n_iterations):
+                y_predicted = self._predict_prob(X)
 
-            first_derivative_dw = (1 / n_sample) * np.dot(X.T, (y_predicted - y_))
-            second_derivative_db = (1 / n_sample) * np.sum(y_predicted - y_)
+                first_derivative_dw = np.dot(X.T, (y_predicted - y_)) / n_sample
+                second_derivative_db = np.sum(y_predicted - y_) / n_sample
 
-            #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
-            self.weights -= self.learning_rate * first_derivative_dw #adjust weights with respect to the learning rate
-            self.bias -= self.learning_rate * second_derivative_db #adjust bias with respect to the learning rate
+                #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
+                self.weights -= self.learning_rate * first_derivative_dw #adjust weights with respect to the learning rate
+                self.bias -= self.learning_rate * second_derivative_db #adjust bias with respect to the learning rate
 
-            #calculate performance metrices for current epoch
-            self._record_metrics(X, y_, X_validation, y_validation, epoch)
+                #calculate performance metrices for current epoch
+                self._record_metrics(X, y_, X_validation, y_validation, epoch)
+        else: #Stocastic gradient descent
+            X_indices = np.arange(X.shape[0])
+
+            for epoch in range(self.n_iterations):
+                np.random.shuffle(X_indices)
+                X_per_epoch = X[X_indices]
+
+                for idx, x_i in enumerate(X_per_epoch):
+                    y_predicted = self._predict_prob(X)
+                    
+                    first_derivative_dw_i = (y_predicted - y_[idx]) * x_i
+                    second_derivative_db_i = (y_predicted - y_[idx])
+
+                    #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
+                    self.weights -= self.learning_rate * first_derivative_dw_i
+                    self.bias -= self.learning_rate * second_derivative_db_i
+
+                #calculate performance metrices for current epoch
+                self._record_metrics(X, y_, X_validation, y_validation, epoch)
 
     def predict(self, X: np.ndarray):
         y_predicted = self._predict_prob(X)

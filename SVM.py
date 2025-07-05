@@ -74,8 +74,13 @@ class SVM:
                 self._record_metrics(X, y_, X_validation, y_validation, epoch)
 
         else: #Stocastic gradient descent
+            X_indices = np.arange(X.shape[0])
+
             for epoch in range(self.n_iterations):
-                for idx, x_i in enumerate(X):
+                np.random.shuffle(X_indices)
+                X_per_epoch = X[X_indices]
+                
+                for idx, x_i in enumerate(X_per_epoch):
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias) #np.dot(wi * xi) = sum(wi * xi)
                     
                     #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
@@ -86,7 +91,7 @@ class SVM:
                         self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
 
                 #calculate performance metrices for current epoch
-                self._record_metrics(X, y_, X_validation, y_validation, epoch)
+                self._record_metrics(X_per_epoch, y_, X_validation, y_validation, epoch)
 
     def _fit_ksvm(self, X, y_):
         n_samples = X.shape[0]
@@ -127,7 +132,7 @@ class SVM:
                 bias_values.append(y_[i] - f_x_i)
                 
             self.bias = np.mean(bias_values)
-        elif np.sum(sv_indices) > 0: #fallback to all alphas if no margin alpha SVs
+        elif np.sum(sv_indices) > 0: #fallback to the first alpha SV if there's no margin alpha SVs
             i = np.where(sv_indices)[0][0]
             f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
 
@@ -135,7 +140,7 @@ class SVM:
         else:
             self.bias = 0.0
 
-    def predict(self, X):
+    def predict(self, X:np.ndarray):
         predictions = np.zeros(X.shape[0])
 
         if self.kernel is not None:
