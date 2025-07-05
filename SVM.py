@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Kernel import Kernel
 from cvxopt import matrix, solvers
+from sklearn.metrics import accuracy_score
 
 '''
 A higher value of λ increases the cost of misclassifications, forcing the algorithm to try harder to classify all training points correctly, 
@@ -27,16 +28,23 @@ class SVM:
         self.bias = None
         self.kernel = kernel
 
-    def fit(self, X, y):
+        #for performance calculation
+        self._train_losses = []
+        self._test_losses = []
+        self._train_accuracies = []
+        self._test_accuracies = []
+
+    def fit(self, X, y, X_validation=None, y_validation=None):
         y_ = np.where(y > 0, 1, -1)
+        y_validation = np.where(y > 0, 1, -1)
 
         if self.kernel is not None:
             self._fit_ksvm(X, y_)
         else:
-            self._fit_svm(X, y_)
+            self._fit_svm(X, y_, X_validation, y_validation)
         
 
-    def _fit_svm(self, X, y_):
+    def _fit_svm(self, X, y_, X_validation, y_validation):
         n_samples, n_features = X.shape
         
         self.weights = np.zeros(n_features)
@@ -44,7 +52,7 @@ class SVM:
 
         #Batch gradient descent
         if(self.gradient_strategy == "BGD"):
-            for _ in range(self.n_iterations):
+            for epoch in range(self.n_iterations):
                 dw = np.zeros(n_features)
                 db = 0                   
 
@@ -62,9 +70,12 @@ class SVM:
                 #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
                 self.weights -= self.learning_rate * (dw_avg + (2 * self.lambda_param * self.weights))
                 self.bias -= self.learning_rate * db_avg
+                
+                #calculate performance metrices for current epoch
+                self._record_metrics(X, y_, X_validation, y_validation, epoch)
 
         else: #Stocastic gradient descent
-            for _ in range(self.n_iterations):
+            for epoch in range(self.n_iterations):
                 for idx, x_i in enumerate(X):
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias) #np.dot(wi * xi) = sum(wi * xi)
                     
@@ -74,6 +85,9 @@ class SVM:
                         self.bias -= self.learning_rate * y_[idx]
                     else:
                         self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
+
+                #calculate performance metrices for current epoch
+                self._record_metrics(X, y_, X_validation, y_validation, epoch)
 
     def _fit_ksvm(self, X, y_):
         n_samples = X.shape[0]
@@ -134,6 +148,41 @@ class SVM:
 
         return np.sign(predictions) #y
     
+    def _hinge_loss(self, X, y_true):
+        scores = np.dot(X, self.weights) + self.bias
+    
+        #average hinge loss for X datapoints
+        avg_hinge_loss = np.mean(np.maximum(0, 1 - y_true * scores))
+        
+        #consider lambda regularization: lambda * ||w||^2
+        regularization_term = self.lambda_param * np.dot(self.weights, self.weights)
+
+        return avg_hinge_loss + regularization_term
+
+    def _record_metrics(self, X_train, y_train, X_test, y_test, epoch):
+        #training loss and accuracy
+        train_loss = self._hinge_loss(X_train, y_train)
+        self._train_losses.append(train_loss)
+
+        train_preds = self.predict(X_train)
+        train_acc = accuracy_score(y_train, train_preds)
+        self._train_accuracies.append(train_acc)
+
+        #validation loss and accuracy
+        if X_test is not None and y_test is not None:
+            test_loss = self._hinge_loss(X_test, y_test)
+            self._test_losses.append(test_loss)
+        
+            test_preds = self.predict(X_test)
+            test_acc = accuracy_score(y_test, test_preds)
+            self._test_accuracies.append(test_acc)
+
+    def get_model_metrics_evaluation(self):
+        return {'loss': self._train_losses,
+                'val_loss': self._test_losses,
+                'accuracy': self._train_accuracies,
+                'val_accuracy': self._test_accuracies}
+
     '''
     Standard visualization [not kernerlized]
     '''
