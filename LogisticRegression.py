@@ -55,7 +55,7 @@ class LogisticRegression:
                 X_per_epoch = X[X_indices]
 
                 for idx, x_i in enumerate(X_per_epoch):
-                    y_predicted = self._predict_prob(X_per_epoch)
+                    y_predicted = self._predict_prob(x_i)
                     
                     first_derivative_dw_i = (y_predicted - y_[idx]) * x_i
                     second_derivative_db_i = (y_predicted - y_[idx])
