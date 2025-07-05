@@ -74,12 +74,12 @@ class SVM:
                 self._record_metrics(X, y_, X_validation, y_validation, epoch)
 
         else: #Stocastic gradient descent
-            X_indices = np.arange(X.shape[0])
+            X_indices = np.arange(n_samples)
 
             for epoch in range(self.n_iterations):
                 np.random.shuffle(X_indices)
                 X_per_epoch = X[X_indices]
-                
+
                 for idx, x_i in enumerate(X_per_epoch):
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias) #np.dot(wi * xi) = sum(wi * xi)
                     

@@ -27,7 +27,7 @@ class LogisticRegression:
         self._test_accuracies = []
 
     def fit(self, X:np.ndarray, y:np.ndarray, X_validation:np.ndarray=None, y_validation:np.ndarray=None):
-        n_sample, n_features = X.shape
+        n_samples, n_features = X.shape
         self.weights = np.zeros(n_features)
         self.bias = 0
 
@@ -38,8 +38,8 @@ class LogisticRegression:
             for epoch in range(self.n_iterations):
                 y_predicted = self._predict_prob(X)
 
-                first_derivative_dw = np.dot(X.T, (y_predicted - y_)) / n_sample
-                second_derivative_db = np.sum(y_predicted - y_) / n_sample
+                first_derivative_dw = np.dot(X.T, (y_predicted - y_)) / n_samples
+                second_derivative_db = np.sum(y_predicted - y_) / n_samples
 
                 #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
                 self.weights -= self.learning_rate * first_derivative_dw #adjust weights with respect to the learning rate
@@ -48,14 +48,14 @@ class LogisticRegression:
                 #calculate performance metrices for current epoch
                 self._record_metrics(X, y_, X_validation, y_validation, epoch)
         else: #Stocastic gradient descent
-            X_indices = np.arange(X.shape[0])
+            X_indices = np.arange(n_samples)
 
             for epoch in range(self.n_iterations):
                 np.random.shuffle(X_indices)
                 X_per_epoch = X[X_indices]
 
                 for idx, x_i in enumerate(X_per_epoch):
-                    y_predicted = self._predict_prob(X)
+                    y_predicted = self._predict_prob(X_per_epoch)
                     
                     first_derivative_dw_i = (y_predicted - y_[idx]) * x_i
                     second_derivative_db_i = (y_predicted - y_[idx])
@@ -65,7 +65,7 @@ class LogisticRegression:
                     self.bias -= self.learning_rate * second_derivative_db_i
 
                 #calculate performance metrices for current epoch
-                self._record_metrics(X, y_, X_validation, y_validation, epoch)
+                self._record_metrics(X_per_epoch, y_, X_validation, y_validation, epoch)
 
     def predict(self, X: np.ndarray):
         y_predicted = self._predict_prob(X)
