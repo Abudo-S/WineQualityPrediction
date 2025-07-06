@@ -131,7 +131,8 @@ class LogisticRegression:
             return self._sigmoid(linear_y)
     
     def _sigmoid(self, z):
-        return 1 / (1 + np.exp(-z))
+        clipped_z = np.clip(-z, -500, 500) #to avoid RuntimeWarning: overflow for very large z
+        return 1 / (1 + np.exp(clipped_z))
     
     '''
     loss = -mean(y * log(p) + (1-y) * log(1-p))
@@ -158,7 +159,7 @@ class LogisticRegression:
     
     def _record_metrics(self, X_train, y_train, X_test, y_test, epoch, K_validation=None):
         #training loss and accuracy
-        train_loss = self._logistic_loss(X_train, y_train, self.kernel.K_matrix)
+        train_loss = self._logistic_loss(X_train, y_train, self.kernel.K_matrix if self.kernel is not None else None)
         self._train_losses.append(train_loss)
 
         train_preds = self.predict(X_train)
