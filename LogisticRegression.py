@@ -146,7 +146,7 @@ class LogisticRegression:
 
         #consider L2 regularization: lambda/2 * ||w||^2
         w_term = None
-        if self.Kernel is not None:
+        if self.kernel is not None:
             w_term = np.dot(self.alphas.T, np.dot(self.kernel.K_matrix, self.alphas))
         else:
             w_term = np.sum(self.weights**2)
