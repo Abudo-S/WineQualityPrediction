@@ -19,7 +19,7 @@ The learning rate aims to adjust the weights and bias (determines how big of a s
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
 '''
 class LogisticRegression:
-    def __init__(self, gradient_strategy = "BGD", learning_rate=0.001, lambda_param = 0.000, n_iterations=1000, threshold=0.5, kernel:Kernel=None):
+    def __init__(self, gradient_strategy = "BGD", learning_rate=0.001, lambda_param = 0.001, n_iterations=1000, threshold=0.5, kernel:Kernel=None):
         self.gradient_strategy = gradient_strategy
         self.learning_rate = learning_rate
         self.lambda_param = lambda_param
