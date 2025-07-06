@@ -145,7 +145,13 @@ class LogisticRegression:
         average_logistic_loss = -np.mean(y_true * np.log(y_prob) + (1 - y_true) * np.log(1 - y_prob))
 
         #consider L2 regularization: lambda/2 * ||w||^2
-        regularization_term = (self.lambda_param / 2) * np.sum(self.weights**2)
+        w_term = None
+        if self.Kernel is not None:
+            w_term = np.dot(self.alphas.T, np.dot(self.kernel.K_matrix, self.alphas))
+        else:
+            w_term = np.sum(self.weights**2)
+
+        regularization_term = (self.lambda_param / 2) * w_term
 
         return average_logistic_loss + regularization_term
     
