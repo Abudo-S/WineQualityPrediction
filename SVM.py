@@ -9,7 +9,7 @@ A higher value of λ increases the cost of misclassifications (shrinking the wei
 even if it means a smaller margin. This can lead to a smaller margin and potentially overfitting if λ is too large.  
 A lower value of λ decreases the cost of misclassifications (expanding the weights), allowing the algorithm to have a larger margin, 
 even if it misclassifies some training points. This can lead to underfitting if λ is too small.
-Generally λ needs to be added if we start noting some overfitting or inadeguate low test performance.
+Generally λ needs to be added if we start notice some overfitting or inadeguate low test performance.
 
 The learning rate aims to adjust the weights and bias (determines how big of a step the algorithm takes in the direction opposite to the gradient)
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
