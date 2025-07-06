@@ -88,10 +88,11 @@ class LogisticRegression:
         self.alphas = np.zeros(n_samples)
         self.bias = 0
         self.X_train = X
-
+        K_validation = self.kernel.compute_kernel_matrix(X_validation, X)
+        
         for epoch in range(self.n_iterations):
             #calculate scores for training data since alphas get updated
-            probabilities_train = self._predict_prob(X)
+            probabilities_train = self._predict_prob(X, self.kernel.K_matrix)
             
             error = probabilities_train - y_
 
@@ -107,21 +108,21 @@ class LogisticRegression:
             self.bias -= self.learning_rate * grad_error
 
             #calculate performance metrices for current epoch
-            self._record_metrics(X, y_, X_validation, y_validation, epoch)
+            self._record_metrics(X, y_, X_validation, y_validation, epoch, K_validation)
 
     def predict(self, X: np.ndarray):
+        K_test = None
         if self.kernel is not None:
             K_test = self.kernel.compute_kernel_matrix(X, self.X_train)
-            self.kernel.K_matrix = K_test
 
-        y_predicted = self._predict_prob(X)
+        y_predicted = self._predict_prob(X, K_test)
         
         #converting probabilities to classes based on a single threshold, makes LR considered as linear model, despite the expliot of sigmoid
         return np.where(y_predicted >= self.threshold, 1, -1)
 
-    def _predict_prob(self, X):
-        if self.kernel is not None: #scores = K @ alphas + bias
-            y_scores = np.dot(self.kernel.K_matrix, self.alphas) + self.bias
+    def _predict_prob(self, X, K_matrix=None):
+        if self.kernel is not None and K_matrix is not None: #scores = K @ alphas + bias
+            y_scores = np.dot(K_matrix, self.alphas) + self.bias
 
             return self._sigmoid(y_scores)
         else:
@@ -135,8 +136,8 @@ class LogisticRegression:
     '''
     loss = -mean(y * log(p) + (1-y) * log(1-p))
     '''
-    def _logistic_loss(self, X, y_true):
-        y_prob = self._predict_prob(X)
+    def _logistic_loss(self, X, y_true, K_matrix=None):
+        y_prob = self._predict_prob(X, K_matrix)
 
         #avoid log(0) by considering a small threshold
         PROB_THRESHOLD = 1e-10
@@ -155,9 +156,9 @@ class LogisticRegression:
 
         return average_logistic_loss + regularization_term
     
-    def _record_metrics(self, X_train, y_train, X_test, y_test, epoch):
+    def _record_metrics(self, X_train, y_train, X_test, y_test, epoch, K_validation=None):
         #training loss and accuracy
-        train_loss = self._logistic_loss(X_train, y_train)
+        train_loss = self._logistic_loss(X_train, y_train, self.kernel.K_matrix)
         self._train_losses.append(train_loss)
 
         train_preds = self.predict(X_train)
@@ -166,7 +167,7 @@ class LogisticRegression:
 
         #validation loss and accuracy
         if X_test is not None and y_test is not None:
-            test_loss = self._logistic_loss(X_test, y_test)
+            test_loss = self._logistic_loss(X_test, y_test, K_validation)
             self._test_losses.append(test_loss)
         
             test_preds = self.predict(X_test)
