@@ -37,7 +37,7 @@ class SVM:
 
     def fit(self, X:np.ndarray, y:np.ndarray, X_validation:np.ndarray=None, y_validation:np.ndarray=None):
         y_ = np.where(y > 0, 1, -1)
-        y_validation = np.where(y_validation > 0, 1, -1)
+        y_validation = np.where(y_validation > 0, 1, -1) if y_validation is not None else y_validation
 
         if self.kernel is not None:
             self._fit_ksvm(X, y_)
