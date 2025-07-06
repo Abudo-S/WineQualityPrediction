@@ -5,10 +5,11 @@ from cvxopt import matrix, solvers
 from sklearn.metrics import accuracy_score
 
 '''
-A higher value of λ increases the cost of misclassifications, forcing the algorithm to try harder to classify all training points correctly, 
+A higher value of λ increases the cost of misclassifications (shrinking the weights), forcing the algorithm to try harder to classify all training points correctly, 
 even if it means a smaller margin. This can lead to a smaller margin and potentially overfitting if λ is too large.  
-A lower value of λ decreases the cost of misclassifications, allowing the algorithm to have a larger margin, 
+A lower value of λ decreases the cost of misclassifications (expanding the weights), allowing the algorithm to have a larger margin, 
 even if it misclassifies some training points. This can lead to underfitting if λ is too small.
+Generally λ needs to be added if we start noting some overfitting or inadeguate low test performance.
 
 The learning rate aims to adjust the weights and bias (determines how big of a step the algorithm takes in the direction opposite to the gradient)
 n_iterations is the number of epochs needed to converge to the near-optimal weights and bias, reducing consequently the loss.
@@ -134,6 +135,7 @@ class SVM:
             self.bias = np.mean(bias_values)
         elif np.sum(sv_indices) > 0: #fallback to the first alpha SV if there's no margin alpha SVs
             i = np.where(sv_indices)[0][0]
+            #calculate f(x_i) = sum(alpha_j * y_j * K(x_j, x_i)) for the current SV x_i
             f_x_i = np.sum(self.alphas[sv_indices] * y_[sv_indices] * self.kernel.K_matrix[sv_indices, i])
 
             self.bias = y_[i] - f_x_i
@@ -161,7 +163,7 @@ class SVM:
         #average hinge loss for X datapoints
         avg_hinge_loss = np.mean(np.maximum(0, 1 - y_true * scores))
         
-        #consider lambda regularization: lambda * ||w||^2
+        #consider L2 regularization: lambda * ||w||^2
         regularization_term = self.lambda_param * np.dot(self.weights, self.weights)
 
         return avg_hinge_loss + regularization_term
