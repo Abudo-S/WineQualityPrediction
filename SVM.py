@@ -60,7 +60,7 @@ class SVM:
                 for idx, x_i in enumerate(X):
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias)
 
-                    if margin_score < 1:
+                    if margin_score < 1: #misclassification condition
                         dw += (-y_[idx] * x_i)
                         db += (-y_[idx])
 
@@ -85,11 +85,9 @@ class SVM:
                     margin_score = y_[idx] * (np.dot(x_i, self.weights) + self.bias) #np.dot(wi * xi) = sum(wi * xi)
                     
                     #note that the stepUpdate is in the opposite of weight -= (since we're using gradient descent)
-                    if margin_score < 1:
+                    if margin_score < 1: #misclassification condition
                         self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights - np.dot(x_i, y_[idx]))
                         self.bias -= self.learning_rate * y_[idx]
-                    else:
-                        self.weights -= self.learning_rate * (2 * self.lambda_param * self.weights)
 
                 #calculate performance metrices for current epoch
                 self._record_metrics(X_per_epoch, y_, X_validation, y_validation, epoch)
@@ -221,13 +219,13 @@ class SVM:
         x1_1_p = get_hyperplane_value(x0_1, self.weights, self.bias, 1)
         x1_2_p = get_hyperplane_value(x0_2, self.weights, self.bias, 1)
 
-        ax.plot([x0_1, x0_2], [x1_1, x1_2], "y--", label = "SVM hyperplane")
-        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], "k")
-        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], "k")
+        ax.plot([x0_1, x0_2], [x1_1, x1_2], color='green', linestyle='-', linewidth=2, label = "SVM hyperplane")
+        ax.plot([x0_1, x0_2], [x1_1_m, x1_2_m], color='black', linestyle='-', linewidth=2, label = "SVM margin")
+        ax.plot([x0_1, x0_2], [x1_1_p, x1_2_p], color='black', linestyle='-', linewidth=2)
 
         x1_min = np.amin(X[:, 1])
         x1_max = np.amax(X[:, 1])
-        ax.set_ylim([x1_min - 3, x1_max + 3])
+        ax.set_ylim([x1_min - 5, x1_max + 5])
 
         plt.legend()
 
