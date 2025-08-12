@@ -185,7 +185,7 @@ class LogisticRegression:
         plt.clf()
 
         def get_hyperplane_value(x, w, b, offset):
-            return (-w[0] * x + b + offset) / w[1]
+            return (-w[0] * x - b + offset) / w[1]
 
         plt.figure()
         plt.scatter(X[:,0], X[:,1], c=y, edgecolors='k', s=20)

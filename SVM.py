@@ -197,7 +197,7 @@ class SVM:
         plt.clf()
         
         def get_hyperplane_value(x, w, b, offset):
-            return (-w[0] * x + b + offset) / w[1]
+            return (-w[0] * x - b + offset) / w[1]
 
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
